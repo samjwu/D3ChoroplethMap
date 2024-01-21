@@ -1,0 +1,13 @@
+body {
+    display: flex;
+    justify-content: center;
+}
+
+#title {
+    font-size: 2rem;
+    text-align: center;
+}
+
+#description {
+    text-align: center;
+}
