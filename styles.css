@@ -1,15 +1,18 @@
 body {
     display: flex;
     justify-content: center;
+    background-color: black;
 }
 
 #title {
     font-size: 2rem;
     text-align: center;
+    color: white;
 }
 
 #description {
     text-align: center;
+    color: white;
 }
 
 .states {
@@ -21,4 +24,8 @@ body {
     padding: 1rem;
     background: lightyellow;
     pointer-events: none;
+}
+
+g text {
+    color: white;
 }
