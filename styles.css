@@ -11,3 +11,14 @@ body {
 #description {
     text-align: center;
 }
+
+.states {
+    fill: none;
+}
+
+#tooltip {
+    position: absolute;
+    padding: 1rem;
+    background: lightyellow;
+    pointer-events: none;
+}
