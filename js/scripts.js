@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', function () {
         .rangeRound([600, 860]);
 
     var color = d3.scaleThreshold()
-      .domain(d3.range(LEGEND_MIN, LEGEND_MAX, STEP_SIZE).concat(LEGEND_MAX))
-      .range(d3.range(0, NUM_COLORS).map(i => d3.interpolateGreens(i / (NUM_COLORS - 1))));
-    
+        .domain(d3.range(LEGEND_MIN, LEGEND_MAX, STEP_SIZE).concat(LEGEND_MAX))
+        .range(d3.range(0, NUM_COLORS).map(i => d3.interpolateGreens(i / (NUM_COLORS - 1))));
+
     var g = containerSvg.append("g")
         .attr("class", "key")
         .attr("id", "legend")
@@ -44,4 +44,76 @@ document.addEventListener('DOMContentLoaded', function () {
         .tickValues(color.domain()))
         .select(".domain")
         .remove();
+
+    var pathGenerator = d3.geoPath();
+
+    fetchData()
+        .then(data => {
+            containerSvg.append("g")
+                .attr("class", "counties")
+                .selectAll("path")
+                .data(topojson.feature(data.county, data.county.objects.counties).features)
+                .enter().append("path")
+                .attr("class", "county")
+                .attr("data-fips", function (d) {
+                    return d.id
+                })
+                .attr("data-education", function (d) {
+                    var result = data.education.filter(function (obj) {
+                        return obj.fips == d.id;
+                    });
+                    if (result[0]) {
+                        return result[0].bachelorsOrHigher
+                    }
+                    console.log('could find data for: ', d.id);
+                    return 0
+                })
+                .attr("fill", function (d) {
+                    var result = data.education.filter(function (obj) {
+                        return obj.fips == d.id;
+                    });
+                    if (result[0]) {
+                        return color(result[0].bachelorsOrHigher)
+                    }
+                    console.log('could find data for: ', d.id);
+                    return color(0)
+                })
+                .attr("d", pathGenerator)
+                .on("mouseover", function (event, d) {
+                    tooltip.style("opacity", 1);
+                    tooltip.html(function () {
+                        var result = data.education.filter(function (obj) {
+                            return obj.fips == d.id;
+                        });
+                        if (result[0]) {
+                            return result[0]['area_name'] + ', ' + result[0]['state'] + ': ' + result[0].bachelorsOrHigher + '%'
+                        }
+                        console.log('could find data for: ', d.id);
+                        return 0
+                    })
+                        .attr("data-education", function () {
+                            var result = data.education.filter(function (obj) {
+                                return obj.fips == d.id;
+                            });
+                            if (result[0]) {
+                                return result[0].bachelorsOrHigher
+                            }
+                            console.log('could find data for: ', d.id);
+                            return 0
+                        })
+                        .style("left", (event.pageX + 10) + "px")
+                        .style("top", (event.pageY - 28) + "px");
+                })
+                .on("mouseout", function (event, d) {
+                    tooltip.style("opacity", 0);
+                });
+
+            containerSvg.append("path")
+                .datum(topojson.mesh(data.county, data.county.objects.states, function (a, b) { return a !== b; }))
+                .attr("class", "states")
+                .attr("d", pathGenerator);
+        })
+        .catch(error => {
+            console.error(error);
+        });
 });
